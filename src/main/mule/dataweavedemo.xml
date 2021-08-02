@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="c69667bc-b115-43b0-8a86-3e864cc485fb" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="dataweavedemoFlow" doc:id="4e80be67-dc3c-4e72-958f-8a758b0c6921" >
+		<http:listener doc:name="Listener" doc:id="2a540fac-c868-405a-97bf-f21430036478" config-ref="HTTP_Listener_config" path="/test"/>
+		<ee:transform doc:name="Transform Message" doc:id="1eefd349-ea10-462e-9e64-a6a151862d97" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+var a = [
+{
+       name:"Sandeep",
+		id:100,
+		org:"hcl",
+		course:"Mule",
+		price:20
+		},
+		{ name:"Pratyush",
+		id:500,
+		org:"hcl",
+		course:"Mule",
+		price:30
+		},
+		{
+		name:"Sandeep",
+		id:500,
+		org:"google",
+		course:"DataScience",
+		price:40
+		},
+		{
+		name:"Manvik",
+		id:200,
+		org:"Facebook",
+		course:"GCP",
+		price:50
+		}
+	]
+---
+{
+Details:
+
+	
+	book: a distinctBy $.name filter($.id>100) map ((item, index) -> {
+	name:item.name,
+	rollnum:item.id,
+	company:item.org,
+	course:item.org ++"-"++ item.course,
+	rate:item.price
+} ) orderBy $.name,
+ total: a distinctBy $.name filter($.id>100) reduce ((item, accumulator=0) -> accumulator+item.price )
+
+
+
+}
+
+
+
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="6cb50a14-9ba3-44ce-9905-5a3a947dcced" message='"Flow is completed"'/>
+	</flow>
+</mule>
